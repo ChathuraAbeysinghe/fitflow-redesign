@@ -15,8 +15,7 @@
           "cameraPermission": "FitFlow uses the camera to recognise your meals from a photo."
         }
       ],
-      "expo-notifications",
-      "expo-font"
+      "expo-notifications"
     ],
     "ios": {
       "supportsTablet": true,
