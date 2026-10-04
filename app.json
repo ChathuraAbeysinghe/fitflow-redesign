@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "FitFlow",
+    "slug": "fitflow",
+    "scheme": "fitflow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "FitFlow uses the camera to recognise your meals from a photo."
+        }
+      ],
+      "expo-notifications"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fitflow.app",
+      "buildNumber": "1"
+    },
+    "android": {
+      "package": "com.fitflow.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#0E3B43",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
