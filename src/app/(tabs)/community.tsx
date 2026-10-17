@@ -30,32 +30,58 @@ export default function Community() {
       .sort((a, b) => b.progress - a.progress);
     return (
       <Card key={c.id} style={featured ? styles.featured : undefined}>
-        {featured && <View style={styles.pill}><Tag color={colors.text}>Featured challenge</Tag></View>}
+        {featured && (
+          <View style={styles.pill}>
+            <Ionicons name="flame" size={14} color={colors.lime} />
+            <Text style={[type.caption, { color: colors.lime, letterSpacing: 0.5 }]}>FEATURED CHALLENGE</Text>
+          </View>
+        )}
         <Text style={featured ? styles.featuredTitle : type.h2}>{c.name}</Text>
-        <Text style={[type.small, { marginVertical: 4 }]}>
-          Finish {c.target} workouts in {c.days} days. {c.demo.length + (c.joined ? 1 : 0)} participants this week.
+        <Text style={[type.small, { marginVertical: 6, color: colors.textSecondary }]}>
+          Finish {c.target} workouts in {c.days} days • {c.demo.length + (c.joined ? 1 : 0)} active challengers
         </Text>
         <PrivacyBadge visibility={data.visibility} />
         {c.joined && (
-          <View style={{ marginTop: 12 }}>
-            <Text style={type.small}>Your progress: {Math.min(mine, c.target)} of {c.target}</Text>
-            <View style={{ marginTop: 6 }}><Bar value={mine} max={c.target} /></View>
+          <View style={{ marginTop: 14 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+              <Text style={type.small}>Your progress</Text>
+              <Text style={[type.small, { color: colors.primary, fontWeight: '800' }]}>{Math.min(mine, c.target)} of {c.target} workouts</Text>
+            </View>
+            <Bar value={mine} max={c.target} color={colors.primary} />
           </View>
         )}
         {board.length > 0 && (
-          <View style={{ marginTop: 12 }}>
-            <Tag color={colors.muted}>Leaderboard (demo members)</Tag>
+          <View style={{ marginTop: 14, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.border }}>
+            <Text style={[type.caption, { color: colors.muted, marginBottom: 8 }]}>COMMUNITY LEADERBOARD</Text>
             {board.map((b, i) => (
-              <View key={b.name} style={styles.boardRow}>
-                <Text style={[styles.rank, b.me && { color: colors.primaryText }]}>{i + 1}</Text>
-                <Text style={{ flex: 1, color: colors.text, fontWeight: b.me ? '800' : '500' }}>{b.name}</Text>
-                <Text style={[type.small, { color: colors.primaryText, fontWeight: '700' }]}>{Math.round((Math.min(b.progress, c.target) / c.target) * 100)}% done</Text>
+              <View key={b.name} style={[styles.boardRow, b.me && styles.boardRowMe]}>
+                <View style={[styles.rankBadge, i === 0 && { backgroundColor: 'rgba(255, 215, 0, 0.2)' }]}>
+                  <Text style={[styles.rank, i === 0 && { color: '#FFD700' }, b.me && { color: colors.primary }]}>
+                    {i === 0 ? '👑' : `${i + 1}`}
+                  </Text>
+                </View>
+                <Text style={{ flex: 1, color: colors.text, fontWeight: b.me ? '800' : '600' }}>
+                  {b.name} {b.me ? '(You)' : ''}
+                </Text>
+                <Tag color={b.me ? colors.primary : colors.muted}>
+                  {Math.round((Math.min(b.progress, c.target) / c.target) * 100)}%
+                </Tag>
               </View>
             ))}
           </View>
         )}
-        {c.joined && mine >= c.target && <Text style={{ color: colors.green, fontWeight: '800', marginTop: 8 }}>Challenge complete. Well done.</Text>}
-        <Button label={c.joined ? 'Leave challenge' : 'Join challenge'} variant={c.joined ? 'ghost' : 'primary'} onPress={() => toggleChallenge(c.id)} style={{ marginTop: 14 }} />
+        {c.joined && mine >= c.target && (
+          <View style={styles.completedBanner}>
+            <Ionicons name="trophy" size={18} color={colors.lime} />
+            <Text style={{ color: colors.lime, fontWeight: '800', fontSize: 13 }}>Challenge Completed! Badge Unlocked.</Text>
+          </View>
+        )}
+        <Button
+          label={c.joined ? 'Leave challenge' : 'Join challenge'}
+          variant={c.joined ? 'ghost' : 'volt'}
+          onPress={() => toggleChallenge(c.id)}
+          style={{ marginTop: 14 }}
+        />
       </Card>
     );
   };
@@ -124,11 +150,56 @@ export default function Community() {
 }
 
 const styles = StyleSheet.create({
-  featured: { backgroundColor: '#14163A', borderColor: '#2E3170', borderRadius: 24, paddingVertical: 20 },
-  pill: { alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.12)', paddingVertical: 4, paddingHorizontal: 10, borderRadius: radius.chip, marginBottom: 14 },
-  featuredTitle: { fontSize: 24, fontWeight: '800', color: colors.text },
-  boardRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 7 },
-  rank: { width: 20, fontWeight: '800', color: colors.muted },
+  featured: {
+    backgroundColor: colors.surface2,
+    borderColor: colors.primary,
+    borderWidth: 1.5,
+    borderRadius: radius.card,
+    paddingVertical: 20,
+  },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: colors.limeSoft,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: radius.chip,
+    marginBottom: 12,
+  },
+  featuredTitle: { fontSize: 24, fontWeight: '800', color: colors.text, letterSpacing: -0.3 },
+  boardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  boardRowMe: {
+    backgroundColor: colors.primarySoft,
+    borderRadius: 8,
+    paddingHorizontal: 6,
+  },
+  rankBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rank: { fontWeight: '800', fontSize: 13, color: colors.muted },
+  completedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.limeSoft,
+    padding: 10,
+    borderRadius: 12,
+    marginTop: 12,
+  },
   circle: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
   input: { marginVertical: 8 },
 });

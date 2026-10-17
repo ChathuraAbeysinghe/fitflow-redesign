@@ -123,7 +123,7 @@ export default function TrainerHome() {
           >
             <Card style={styles.row}>
               <View style={styles.avatar}>
-                <Text style={{ color: '#fff', fontWeight: '800' }}>{c.name[0]}</Text>
+                <Text style={{ color: colors.bg, fontWeight: '800', fontSize: 16 }}>{c.name[0]}</Text>
               </View>
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
