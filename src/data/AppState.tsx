@@ -80,6 +80,8 @@ type Ctx = {
   setClientInjuries: (id: string, injuries: Injury[]) => void;
   setClientSessionMinutes: (id: string, dayIndex: number, minutes: number) => void;
   setClientNotes: (id: string, notes: string) => void;
+  addClient: (name: string, p: Partial<Profile>) => void;
+  moveSessionToDay: (id: string, targetDay: number) => void;
   resetAll: () => Promise<void>;
 };
 
@@ -335,6 +337,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     showToast('Note saved');
   };
 
+  const addClient: Ctx['addClient'] = (name, p) => {
+    const profile: Profile = { ...DEFAULT_PROFILE, name: name.trim() || 'New Client', onboarded: true, ...p };
+    const newClient: Client = {
+      id: `cl${Date.now()}`,
+      name: profile.name,
+      profile,
+      plan: generatePlan(profile, { now: weekStart(new Date()) }),
+      notes: '',
+    };
+    setData((d) => ({ ...d, clients: [...d.clients, newClient] }));
+    showToast(`Added client ${profile.name}`);
+  };
+
+  const moveSessionToDay: Ctx['moveSessionToDay'] = (id, target) => {
+    const s = data.plan.sessions.find((x) => x.id === id);
+    if (!s) return;
+    if (target < 0 || target > 6) return;
+    setData((d) => ({ ...d, plan: swapSessions(d.plan, s.dayIndex, target) }));
+    showToast(`Moved to ${DAY_NAMES[target]}`);
+  };
+
   const resetAll = async () => {
     await applyReminders({ workoutEnabled: false, workoutHour: 18, workoutMinute: 0, mealEnabled: false });
     await repository.clear();
@@ -346,7 +369,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     ready, data, showToast, completeOnboarding, updateProfile, rebuildPlan, swapDays, rescheduleMissed, skipSession,
     completeSession, undoSession, addMeal, deleteMeal, setVisibility, setReminders, createCircle, joinCircleByCode,
     leaveCircle, postToCircle, cheer, createChallenge, toggleChallenge, challengeProgress, setClientInjuries,
-    setClientSessionMinutes, setClientNotes, resetAll,
+    setClientSessionMinutes, setClientNotes, addClient, moveSessionToDay, resetAll,
   };
 
   return (

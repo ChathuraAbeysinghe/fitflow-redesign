@@ -14,8 +14,15 @@ function Gate() {
     );
   }
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
+    <Stack
+      initialRouteName="index"
+      screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}
+    >
+      <Stack.Screen name="index" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="onboarding" />
       <Stack.Screen name="workout" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="profile" />
     </Stack>
   );
 }
