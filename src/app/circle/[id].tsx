@@ -9,7 +9,7 @@ import { colors, type } from '../../theme/theme';
 
 export default function CircleDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data, leaveCircle, postToCircle, cheer } = useApp();
+  const { data, leaveCircle, postToCircle, cheer, showToast } = useApp();
   const [text, setText] = useState('');
   const circle = data.circles.find((c) => c.id === id);
 
@@ -38,7 +38,20 @@ export default function CircleDetail() {
         <Text style={[type.small, { marginTop: 6 }]}>
           {data.visibility === 'private' ? 'Your workouts are not posted here. Change this in the Feed tab.' : 'Your finished workouts are posted here automatically.'}
         </Text>
-        <Button label="Share invite code" variant="ghost" onPress={share} style={{ marginTop: 10 }} />
+        <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+          <Button label="Share Code" variant="ghost" onPress={share} style={{ flex: 1 }} />
+          <Button
+            label={`Copy: ${circle.code}`}
+            variant="light"
+            onPress={() => {
+              if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                navigator.clipboard.writeText(circle.code);
+              }
+              showToast(`Copied ${circle.code} to clipboard`);
+            }}
+            style={{ flex: 1 }}
+          />
+        </View>
       </Card>
 
       <SectionTitle>Members</SectionTitle>

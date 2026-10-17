@@ -37,7 +37,13 @@ export function Page({
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: tabbed ? 120 : 40 }} keyboardShouldPersistTaps="handled">
             {back && (
-              <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={() => router.back()} hitSlop={10} style={styles.back}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
+                onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)'))}
+                hitSlop={10}
+                style={styles.back}
+              >
                 <Ionicons name="chevron-back" size={22} color={colors.primaryText} />
                 <Text style={{ color: colors.primaryText, fontWeight: '700' }}>Back</Text>
               </Pressable>
