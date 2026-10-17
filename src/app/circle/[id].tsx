@@ -58,7 +58,7 @@ export default function CircleDetail() {
       <Card style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14 }}>
         {[...circle.members, `${data.profile.name} (you)`].map((m) => (
           <View key={m} style={{ alignItems: 'center', width: 64 }}>
-            <View style={styles.avatar}><Text style={{ color: '#fff', fontWeight: '800' }}>{m[0]}</Text></View>
+            <View style={styles.avatar}><Text style={{ color: colors.bg, fontWeight: '800' }}>{m[0]}</Text></View>
             <Text style={[type.small, { textAlign: 'center' }]} numberOfLines={1}>{m}</Text>
           </View>
         ))}
@@ -71,7 +71,7 @@ export default function CircleDetail() {
       </Card>
       {feed.length === 0 ? <Empty text="No activity yet. Finish a workout or post an update." /> : feed.map((f) => (
         <Card key={f.id} style={{ flexDirection: 'row', gap: 12 }}>
-          <View style={[styles.avatar, f.mine && { backgroundColor: colors.sky }]}><Text style={{ color: '#fff', fontWeight: '800' }}>{f.author[0]}</Text></View>
+          <View style={[styles.avatar, f.mine && { backgroundColor: colors.lime }]}><Text style={{ color: colors.bg, fontWeight: '800' }}>{f.author[0]}</Text></View>
           <View style={{ flex: 1 }}>
             <Text style={{ color: colors.text }}><Text style={{ fontWeight: '800' }}>{f.mine ? 'You' : f.author}</Text> {f.text}</Text>
             <Text style={type.small}>{timeAgo(f.ts)}</Text>
@@ -90,5 +90,5 @@ export default function CircleDetail() {
 
 const styles = StyleSheet.create({
   avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 12, marginBottom: 10, fontSize: 15, color: colors.text, minHeight: 56 },
+  input: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface2, borderRadius: 12, padding: 12, marginBottom: 10, fontSize: 15, color: colors.text, minHeight: 64 },
 });

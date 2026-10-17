@@ -11,6 +11,17 @@ import { focusSession } from '../logic/stats';
 const REST_SECONDS = 30;
 const pad = (n: number) => String(n).padStart(2, '0');
 type Phase = 'ready' | 'work' | 'rest' | 'done';
+type TabMode = 'execution' | 'muscles' | 'tips';
+
+const FOCUS_MUSCLES: Record<string, string[]> = {
+  push: ['Chest', 'Triceps', 'Front Delts', 'Core'],
+  pull: ['Lats', 'Biceps', 'Rhomboids', 'Forearms'],
+  legs: ['Quads', 'Hamstrings', 'Glutes', 'Calves'],
+  core: ['Upper Abs', 'Lower Abs', 'Obliques'],
+  cardio: ['Cardiovascular', 'Full Body', 'Legs'],
+  mobility: ['Hip Flexors', 'Thoracic Spine', 'Hamstrings'],
+  full: ['Chest', 'Back', 'Quads', 'Core'],
+};
 
 export default function Workout() {
   const { sessionId } = useLocalSearchParams<{ sessionId?: string }>();
@@ -32,6 +43,7 @@ export default function Workout() {
   const [phase, setPhase] = useState<Phase>('ready');
   const [secs, setSecs] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabMode>('execution');
 
   const list = session?.exercises ?? [];
   const current = list[ex];
@@ -114,8 +126,8 @@ export default function Workout() {
       <View style={styles.screen}>
         <SafeAreaView style={styles.center}>
           <View style={{ alignItems: 'center', marginVertical: 20 }}>
-            <Ionicons name="checkmark-done-circle" size={64} color={colors.green} />
-            <Text style={[styles.title, { marginTop: 12 }]}>Already Completed!</Text>
+            <Ionicons name="checkmark-done-circle" size={68} color={colors.green} />
+            <Text style={[styles.title, { marginTop: 14 }]}>Already Completed!</Text>
             <Text style={[type.small, { textAlign: 'center', marginTop: 4 }]}>
               You finished {session.title} ({session.minutes} minutes). Great consistency!
             </Text>
@@ -123,9 +135,10 @@ export default function Workout() {
 
           <Card style={{ alignSelf: 'stretch' }}>
             <Text style={[type.h2, { marginBottom: 8 }]}>Completed Moves</Text>
-            {list.map((e, i) => (
-              <View key={e.exerciseId} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 }}>
-                <Text style={{ color: colors.text }}>{e.name}</Text>
+            {list.map((e) => (
+              <View key={e.exerciseId} style={styles.completedMoveRow}>
+                <Ionicons name="checkmark-circle" size={16} color={colors.green} />
+                <Text style={{ color: colors.text, flex: 1, fontWeight: '600' }}>{e.name}</Text>
                 <Text style={type.small}>{e.sets} sets</Text>
               </View>
             ))}
@@ -154,17 +167,17 @@ export default function Workout() {
     return (
       <View style={styles.screen}>
         <SafeAreaView style={styles.center}>
-          <View style={{ alignItems: 'center', gap: 8, marginTop: 16 }}>
+          <View style={{ alignItems: 'center', gap: 8, marginTop: 20 }}>
             <View style={styles.trophy}>
-              <Ionicons name="trophy" size={44} color={colors.amber} />
+              <Ionicons name="trophy" size={48} color={colors.amber} />
             </View>
             <Text style={styles.title}>Workout Complete!</Text>
-            <Text style={[type.small, { textAlign: 'center' }]}>
+            <Text style={[type.small, { textAlign: 'center', color: colors.textSecondary }]}>
               Outstanding effort on {session.title}!
             </Text>
           </View>
 
-          <Card style={{ alignSelf: 'stretch' }}>
+          <Card style={{ alignSelf: 'stretch', borderColor: colors.primary }}>
             <View style={styles.statGrid}>
               <View style={styles.statItem}>
                 <Text style={styles.statVal}>{session.minutes}m</Text>
@@ -183,14 +196,14 @@ export default function Workout() {
             {/* Lab Sheet 4 R1 Fix: Privacy indicator before saving workout */}
             <View style={{ height: 1, backgroundColor: colors.border, marginVertical: 14 }} />
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <View>
-                <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13 }}>Sharing to:</Text>
+              <View style={{ flex: 1, paddingRight: 8 }}>
+                <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13 }}>Sharing destination:</Text>
                 <Text style={type.small}>
                   {data.visibility === 'private'
-                    ? 'Private (only logged in your history)'
+                    ? 'Saved to private history only'
                     : data.visibility === 'circle'
-                    ? 'Your private accountability circle'
-                    : 'FitFlow community feed'}
+                    ? 'Shared with your private circle'
+                    : 'Shared with FitFlow community'}
                 </Text>
               </View>
               <PrivacyBadge visibility={data.visibility} />
@@ -210,123 +223,212 @@ export default function Workout() {
     );
   }
 
-  // Active workout execution screen
+  // Active workout execution screen (Design inspired by Image 2)
   const totalSets = list.reduce((n, e) => n + e.sets, 0);
   const doneSets = list.slice(0, ex).reduce((n, e) => n + e.sets, 0) + (set - 1);
   const nextUp = set < current.sets ? `${current.name} (Set ${set + 1})` : list[ex + 1]?.name ?? 'Completion!';
+  const muscles = FOCUS_MUSCLES[session.focus] || ['Full Body'];
 
   return (
     <View style={styles.screen}>
       <SafeAreaView style={styles.center}>
-        {/* Top Progress bar and controls */}
+        {/* Top Header bar */}
         <View style={{ alignSelf: 'stretch' }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <Tag color={colors.primaryText}>
+            <Pressable
+              onPress={goBackHome}
+              hitSlop={8}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+            >
+              <Ionicons name="close" size={22} color={colors.muted} />
+              <Text style={{ color: colors.muted, fontSize: 13, fontWeight: '600' }}>Quit</Text>
+            </Pressable>
+            <Tag color={colors.primary}>
               EXERCISE {ex + 1} OF {list.length}
             </Tag>
-            <Text style={type.small}>
-              Total Sets: {doneSets}/{totalSets}
+            <Text style={[type.small, { fontWeight: '700' }]}>
+              {doneSets}/{totalSets} Sets
             </Text>
           </View>
-          <Bar value={doneSets} max={totalSets} />
+          <Bar value={doneSets} max={totalSets} color={colors.primary} />
         </View>
 
-        {/* Exercise or Rest Phase */}
+        {/* REST PHASE vs ACTIVE EXERCISE PHASE */}
         {phase === 'rest' ? (
-          <View style={{ alignItems: 'center', gap: 12 }}>
+          <View style={styles.restContainer}>
             <Tag color={colors.amber}>RECOVERY REST</Tag>
-            <Text style={styles.timer}>
+            <Text style={styles.timerLarge}>
               {pad(Math.floor(Math.max(secs, 0) / 60))}:{pad(Math.max(secs, 0) % 60)}
             </Text>
 
-            {/* Adjust rest time */}
+            {/* Rest adjustments */}
             <View style={{ flexDirection: 'row', gap: 12 }}>
-              <Pressable
-                onPress={() => setSecs((s) => Math.max(5, s - 15))}
-                style={styles.timeAdj}
-                hitSlop={6}
-              >
-                <Text style={{ color: colors.muted, fontWeight: '700' }}>-15s</Text>
+              <Pressable onPress={() => setSecs((s) => Math.max(5, s - 15))} style={styles.timeAdj} hitSlop={6}>
+                <Text style={styles.timeAdjText}>-15s</Text>
               </Pressable>
-              <Pressable
-                onPress={() => setPaused(!paused)}
-                style={styles.timeAdj}
-                hitSlop={6}
-              >
-                <Ionicons name={paused ? 'play' : 'pause'} size={18} color={colors.text} />
+              <Pressable onPress={() => setPaused(!paused)} style={styles.pauseBtn} hitSlop={6}>
+                <Ionicons name={paused ? 'play' : 'pause'} size={18} color="#080C16" />
+                <Text style={{ color: '#080C16', fontWeight: '800', fontSize: 13 }}>
+                  {paused ? 'Resume' : 'Pause'}
+                </Text>
               </Pressable>
-              <Pressable
-                onPress={() => setSecs((s) => s + 15)}
-                style={styles.timeAdj}
-                hitSlop={6}
-              >
-                <Text style={{ color: colors.muted, fontWeight: '700' }}>+15s</Text>
+              <Pressable onPress={() => setSecs((s) => s + 15)} style={styles.timeAdj} hitSlop={6}>
+                <Text style={styles.timeAdjText}>+15s</Text>
               </Pressable>
             </View>
 
             <View style={styles.nextUpCard}>
-              <Text style={[type.small, { textAlign: 'center' }]}>Next up:</Text>
-              <Text style={{ color: colors.text, fontWeight: '800', fontSize: 16, textAlign: 'center' }}>
+              <Text style={[type.caption, { textAlign: 'center', letterSpacing: 0.8 }]}>NEXT UP</Text>
+              <Text style={{ color: colors.text, fontWeight: '800', fontSize: 16, textAlign: 'center', marginTop: 2 }}>
                 {nextUp}
               </Text>
             </View>
 
             <Button
-              label="Skip rest"
+              label="Skip Rest →"
               variant="light"
               onPress={() => setPhase('ready')}
-              style={{ minWidth: 200 }}
+              style={{ minWidth: 200, marginTop: 10 }}
             />
           </View>
         ) : (
-          <View style={{ alignItems: 'center', gap: 10, alignSelf: 'stretch' }}>
-            <Tag color={colors.primary}>SET {set} OF {current.sets}</Tag>
-            <Text style={styles.title}>{current.name}</Text>
-            <Text style={styles.target}>
-              {current.kind === 'reps' ? `${current.reps} reps` : `${current.seconds} sec`}
-            </Text>
+          <View style={{ alignSelf: 'stretch', gap: 10 }}>
+            {/* Exercise Hero Card (Inspired by Image 2) */}
+            <Card style={styles.exerciseCard}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Tag color={colors.lime}>EXERCISE</Tag>
+                <Tag color={colors.primary}>{data.profile.level.toUpperCase()}</Tag>
+              </View>
 
+              <Text style={styles.exerciseTitle}>{current.name}</Text>
+              <Text style={[type.small, { color: colors.muted, marginBottom: 8 }]}>
+                {session.title} • {session.focus.toUpperCase()}
+              </Text>
+
+              {/* Pill Segmented Tabs (Image 2 inspired: Execution | Muscles | Tips) */}
+              <View style={styles.exerciseTabs}>
+                <Pressable
+                  onPress={() => setActiveTab('execution')}
+                  style={[styles.exTabItem, activeTab === 'execution' && styles.exTabItemActive]}
+                >
+                  <Text style={[styles.exTabText, activeTab === 'execution' && styles.exTabTextActive]}>
+                    Execution
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setActiveTab('muscles')}
+                  style={[styles.exTabItem, activeTab === 'muscles' && styles.exTabItemActive]}
+                >
+                  <Text style={[styles.exTabText, activeTab === 'muscles' && styles.exTabTextActive]}>
+                    Target Muscles
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setActiveTab('tips')}
+                  style={[styles.exTabItem, activeTab === 'tips' && styles.exTabItemActive]}
+                >
+                  <Text style={[styles.exTabText, activeTab === 'tips' && styles.exTabTextActive]}>
+                    Coach Tip
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* Tab Content */}
+              <View style={styles.tabContentBox}>
+                {activeTab === 'execution' && (
+                  <Text style={styles.tabBodyText}>
+                    Perform {current.kind === 'reps' ? `${current.reps} controlled repetitions` : `${current.seconds} seconds duration`}. Focus on smooth cadence without momentum.
+                  </Text>
+                )}
+                {activeTab === 'muscles' && (
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                    {muscles.map((m) => (
+                      <View key={m} style={styles.musclePill}>
+                        <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.lime }} />
+                        <Text style={{ color: colors.lime, fontSize: 12, fontWeight: '700' }}>{m}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+                {activeTab === 'tips' && (
+                  <Text style={[styles.tabBodyText, { fontStyle: 'italic' }]}>
+                    💡 {current.tip}
+                  </Text>
+                )}
+              </View>
+            </Card>
+
+            {/* 4 Bottom Metric Blocks (Image 2 bottom bar: Rest, Reps/Time, Sets, Intensity) */}
+            <View style={styles.bottomStatRow}>
+              <View style={styles.bottomStatBlock}>
+                <View style={styles.statIconWrap}>
+                  <Ionicons name="time-outline" size={16} color={colors.primary} />
+                </View>
+                <Text style={styles.statHeader}>REST</Text>
+                <Text style={styles.statContent}>{REST_SECONDS}s</Text>
+              </View>
+
+              <View style={styles.bottomStatBlock}>
+                <View style={styles.statIconWrap}>
+                  <Ionicons name="repeat-outline" size={16} color={colors.lime} />
+                </View>
+                <Text style={styles.statHeader}>{current.kind === 'reps' ? 'REPS' : 'TIME'}</Text>
+                <Text style={styles.statContent}>
+                  {current.kind === 'reps' ? `${current.reps} reps` : `${current.seconds}s`}
+                </Text>
+              </View>
+
+              <View style={styles.bottomStatBlock}>
+                <View style={styles.statIconWrap}>
+                  <Ionicons name="layers-outline" size={16} color={colors.amber} />
+                </View>
+                <Text style={styles.statHeader}>SET</Text>
+                <Text style={styles.statContent}>{set} of {current.sets}</Text>
+              </View>
+
+              <View style={styles.bottomStatBlock}>
+                <View style={styles.statIconWrap}>
+                  <Ionicons name="flash-outline" size={16} color={colors.rose} />
+                </View>
+                <Text style={styles.statHeader}>EFFORT</Text>
+                <Text style={styles.statContent}>Optimal</Text>
+              </View>
+            </View>
+
+            {/* Timed countdown if exercise is time-based */}
             {timed && (
               <View style={{ alignItems: 'center', gap: 6, marginVertical: 6 }}>
-                <Text style={styles.timer}>
+                <Text style={styles.timerLarge}>
                   {pad(Math.floor(Math.max(secs, 0) / 60))}:{pad(Math.max(secs, 0) % 60)}
                 </Text>
-                <Pressable
-                  onPress={() => setPaused(!paused)}
-                  style={styles.pausePill}
-                  hitSlop={8}
-                >
-                  <Ionicons name={paused ? 'play' : 'pause'} size={16} color="#fff" />
-                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>
-                    {paused ? 'Resume' : 'Pause'}
+                <Pressable onPress={() => setPaused(!paused)} style={styles.pausePill} hitSlop={8}>
+                  <Ionicons name={paused ? 'play' : 'pause'} size={16} color="#080C16" />
+                  <Text style={{ color: '#080C16', fontWeight: '800', fontSize: 13 }}>
+                    {paused ? 'Resume Timer' : 'Pause'}
                   </Text>
                 </Pressable>
               </View>
             )}
 
-            <Card style={{ backgroundColor: colors.surface2, borderColor: colors.border, padding: 12 }}>
-              <Text style={[type.small, { textAlign: 'center', color: colors.text }]}>
-                💡 {current.tip}
-              </Text>
-            </Card>
-
-            <View style={{ alignSelf: 'stretch', gap: 10, marginTop: 10 }}>
+            {/* Action Buttons */}
+            <View style={{ gap: 10, marginTop: 4 }}>
               {phase === 'ready' && (
                 <Button
-                  label={current.kind === 'time' ? 'Start countdown' : 'Start set'}
+                  label={current.kind === 'time' ? 'Start Countdown Timer →' : 'Start Set Now →'}
+                  variant="primary"
                   onPress={begin}
                 />
               )}
               {phase === 'work' && current.kind === 'reps' && (
-                <Button label="Set completed ✓" onPress={finishSet} />
+                <Button label="Set Complete ✓" variant="volt" onPress={finishSet} />
               )}
               {phase === 'work' && current.kind === 'time' && (
-                <Button label="Finish set early" variant="light" onPress={finishSet} />
+                <Button label="Finish Set Early" variant="light" onPress={finishSet} />
               )}
             </View>
 
-            {/* Quick skip/jump navigation */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'stretch', marginTop: 6 }}>
+            {/* Navigation skip controls */}
+            <View style={styles.navRow}>
               <Pressable
                 onPress={prevEx}
                 disabled={ex === 0}
@@ -334,26 +436,16 @@ export default function Workout() {
                 style={[styles.navBtn, ex === 0 && { opacity: 0.3 }]}
               >
                 <Ionicons name="play-skip-back" size={16} color={colors.muted} />
-                <Text style={[type.small, { color: colors.muted }]}>Previous Move</Text>
+                <Text style={[type.small, { color: colors.muted, fontWeight: '700' }]}>Previous Move</Text>
               </Pressable>
-              <Pressable
-                onPress={nextEx}
-                hitSlop={8}
-                style={styles.navBtn}
-              >
-                <Text style={[type.small, { color: colors.muted }]}>Skip Move</Text>
+
+              <Pressable onPress={nextEx} hitSlop={8} style={styles.navBtn}>
+                <Text style={[type.small, { color: colors.muted, fontWeight: '700' }]}>Skip to Next</Text>
                 <Ionicons name="play-skip-forward" size={16} color={colors.muted} />
               </Pressable>
             </View>
           </View>
         )}
-
-        <Button
-          label="Quit workout"
-          variant="ghost"
-          onPress={goBackHome}
-          style={{ alignSelf: 'stretch' }}
-        />
       </SafeAreaView>
     </View>
   );
@@ -361,24 +453,38 @@ export default function Workout() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  center: { flex: 1, padding: 22, alignItems: 'center', justifyContent: 'space-between' },
+  center: { flex: 1, padding: 20, alignItems: 'center', justifyContent: 'space-between' },
   title: { fontSize: 26, fontWeight: '800', color: colors.text, textAlign: 'center' },
-  target: { fontSize: 40, fontWeight: '800', color: colors.text },
-  timer: { fontSize: 62, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },
+  timerLarge: {
+    fontSize: 68,
+    fontWeight: '900',
+    color: colors.text,
+    fontVariant: ['tabular-nums'],
+    letterSpacing: -1,
+  },
   trophy: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(245,158,11,0.15)',
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(255, 184, 0, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  statGrid: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 6 },
+  statGrid: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 8 },
   statItem: { alignItems: 'center', gap: 4 },
-  statVal: { fontSize: 24, fontWeight: '800', color: colors.text },
+  statVal: { fontSize: 26, fontWeight: '900', color: colors.text },
+  completedMoveRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  restContainer: { alignItems: 'center', gap: 14, marginVertical: 'auto' },
   timeAdj: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: radius.chip,
     backgroundColor: colors.surface2,
     borderWidth: 1,
@@ -386,11 +492,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  nextUpCard: {
-    backgroundColor: colors.surface,
+  timeAdjText: { color: colors.muted, fontWeight: '700', fontSize: 13 },
+  pauseBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.primary,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: radius.chip,
+  },
+  nextUpCard: {
+    backgroundColor: colors.surface,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -400,8 +516,112 @@ const styles = StyleSheet.create({
     gap: 6,
     backgroundColor: colors.primary,
     paddingVertical: 6,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     borderRadius: radius.chip,
   },
-  navBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, padding: 8 },
+  exerciseCard: {
+    padding: 18,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    borderColor: colors.borderLight,
+  },
+  exerciseTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: colors.text,
+    marginTop: 8,
+    letterSpacing: -0.3,
+  },
+  exerciseTabs: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface2,
+    borderRadius: radius.button,
+    padding: 3,
+    marginVertical: 10,
+  },
+  exTabItem: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: radius.button - 3,
+  },
+  exTabItemActive: {
+    backgroundColor: colors.primary,
+  },
+  exTabText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.muted,
+  },
+  exTabTextActive: {
+    color: '#080C16',
+    fontWeight: '800',
+  },
+  tabContentBox: {
+    minHeight: 52,
+    justifyContent: 'center',
+  },
+  tabBodyText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  musclePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(212, 255, 0, 0.1)',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: radius.pill,
+    borderColor: 'rgba(212, 255, 0, 0.25)',
+    borderWidth: 1,
+  },
+  bottomStatRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  bottomStatBlock: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+  },
+  statIconWrap: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: colors.surface2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  statHeader: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: colors.muted,
+    letterSpacing: 0.6,
+  },
+  statContent: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: colors.text,
+    marginTop: 2,
+  },
+  navRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    marginTop: 2,
+  },
+  navBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+  },
 });

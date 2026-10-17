@@ -141,14 +141,17 @@ export default function Log() {
 
       {/* Camera / AI Recognition Stage */}
       {pending ? (
-        <Card style={{ marginTop: 14 }}>
+        <Card style={styles.pendingCard}>
           <Image source={{ uri: pending.uri }} style={styles.photo} />
-          <Text style={[type.h2, { marginTop: 12 }]}>AI Food Recognition</Text>
-          <Text style={[type.small, { marginBottom: 10 }]}>
-            Select the closest match detected in your photo:
-          </Text>
+          <View style={styles.pendingHeader}>
+            <View>
+              <Text style={type.h2}>AI Food Recognition</Text>
+              <Text style={type.small}>Select closest match detected:</Text>
+            </View>
+            <Tag color={colors.primary}>AI DETECTED</Tag>
+          </View>
 
-          <View style={{ gap: 8 }}>
+          <View style={{ gap: 8, marginTop: 8 }}>
             {pending.candidates.map((f) => {
               const on = pending.pick === f.id;
               return (
@@ -159,21 +162,26 @@ export default function Log() {
                 >
                   <Ionicons
                     name={on ? 'radio-button-on' : 'radio-button-off'}
-                    size={20}
+                    size={22}
                     color={on ? colors.primary : colors.muted}
                   />
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontWeight: '700', color: colors.text }}>{f.name}</Text>
+                    <Text style={{ fontWeight: '700', color: colors.text, fontSize: 15 }}>{f.name}</Text>
                     <Text style={type.small}>
-                      {f.serving} • {Math.round(f.kcal * portion)} kcal (P: {Math.round(f.protein * portion)}g, C: {Math.round(f.carbs * portion)}g, F: {Math.round(f.fat * portion)}g)
+                      {f.serving} • {Math.round(f.kcal * portion)} kcal
                     </Text>
+                  </View>
+                  <View style={styles.macroMiniRow}>
+                    <Text style={[styles.macroMiniText, { color: colors.primary }]}>P:{Math.round(f.protein * portion)}g</Text>
+                    <Text style={[styles.macroMiniText, { color: colors.amber }]}>C:{Math.round(f.carbs * portion)}g</Text>
+                    <Text style={[styles.macroMiniText, { color: colors.rose }]}>F:{Math.round(f.fat * portion)}g</Text>
                   </View>
                 </Pressable>
               );
             })}
           </View>
 
-          <Button label="Save this meal" onPress={confirm} style={{ marginTop: 14 }} />
+          <Button label="Save to Nutrition Diary" onPress={confirm} style={{ marginTop: 16 }} />
           <Button label="Retake photo" variant="ghost" onPress={() => setPending(null)} style={{ marginTop: 8 }} />
         </Card>
       ) : (
@@ -190,18 +198,18 @@ export default function Log() {
               <View style={styles.scanCircle}>
                 <Ionicons
                   name={busy ? 'hourglass-outline' : 'camera'}
-                  size={32}
-                  color={colors.primaryText}
+                  size={34}
+                  color={colors.bg}
                 />
               </View>
             </View>
-            <Text style={styles.scanText}>{busy ? 'Analyzing meal...' : 'Scan meal'}</Text>
-            <Text style={[type.small, { textAlign: 'center', marginTop: 2 }]}>
-              Point camera at your meal for instant macro breakdown
+            <Text style={styles.scanText}>{busy ? 'Analyzing meal...' : 'Scan Meal with AI'}</Text>
+            <Text style={[type.small, { textAlign: 'center', marginTop: 2, color: colors.muted }]}>
+              Point camera at your plate for instant calorie & macro breakdown
             </Text>
           </Pressable>
 
-          {/* Lab Sheet 4 U6 Fix: Shortcut to photo gallery alongside camera */}
+          {/* Quick Shortcuts */}
           <View style={styles.quickOptions}>
             <Pressable
               accessibilityRole="button"
@@ -210,8 +218,8 @@ export default function Log() {
               hitSlop={8}
               style={styles.galleryShortcut}
             >
-              <Ionicons name="images-outline" size={18} color={colors.primaryText} />
-              <Text style={styles.shortcutText}>Choose from Gallery</Text>
+              <Ionicons name="images-outline" size={18} color={colors.primary} />
+              <Text style={styles.shortcutText}>Photo Gallery</Text>
             </Pressable>
 
             <Pressable
@@ -219,11 +227,11 @@ export default function Log() {
               accessibilityLabel="Toggle manual meal entry"
               onPress={() => setManual(!manual)}
               hitSlop={8}
-              style={styles.galleryShortcut}
+              style={[styles.galleryShortcut, manual && styles.galleryShortcutActive]}
             >
-              <Ionicons name="create-outline" size={18} color={colors.primaryText} />
-              <Text style={styles.shortcutText}>
-                {manual ? 'Hide manual entry' : 'Enter manually instead'}
+              <Ionicons name="search-outline" size={18} color={manual ? colors.lime : colors.text} />
+              <Text style={[styles.shortcutText, manual && { color: colors.lime }]}>
+                {manual ? 'Close Search' : 'Search / Manual'}
               </Text>
             </Pressable>
           </View>
@@ -232,12 +240,12 @@ export default function Log() {
 
       {/* Manual Entry Drawer */}
       {manual && !pending && (
-        <Card style={{ marginTop: 14 }}>
-          <Text style={[type.h2, { marginBottom: 8 }]}>Search or Add Food</Text>
+        <Card style={{ marginTop: 14, borderColor: colors.borderLight }}>
+          <Text style={[type.h2, { marginBottom: 8 }]}>Search Food Database</Text>
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder="Search e.g. Rice, Chicken, Oats..."
+            placeholder="Type e.g. Oatmeal, Chicken Breast, Eggs..."
             placeholderTextColor={colors.muted}
             style={[inputStyle, { marginBottom: 12 }]}
             accessibilityLabel="Search foods"
@@ -252,25 +260,25 @@ export default function Log() {
               accessibilityLabel={`Add ${f.name}`}
             >
               <View style={{ flex: 1 }}>
-                <Text style={{ color: colors.text, fontWeight: '700' }}>{f.name}</Text>
+                <Text style={{ color: colors.text, fontWeight: '700', fontSize: 15 }}>{f.name}</Text>
                 <Text style={type.small}>
                   {f.serving} • P:{Math.round(f.protein * portion)}g C:{Math.round(f.carbs * portion)}g F:{Math.round(f.fat * portion)}g
                 </Text>
               </View>
               <View style={{ alignItems: 'flex-end', marginRight: 10 }}>
-                <Text style={{ color: colors.text, fontWeight: '700' }}>
+                <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 16 }}>
                   {Math.round(f.kcal * portion)} kcal
                 </Text>
                 <Text style={type.small}>{portion}x</Text>
               </View>
-              <Ionicons name="add-circle" size={26} color={colors.primary} />
+              <Ionicons name="add-circle" size={28} color={colors.primary} />
             </Pressable>
           ))}
 
           {/* Custom Food Creation Form */}
           <View style={styles.customBox}>
             <Text style={[type.small, { fontWeight: '700', color: colors.text }]}>
-              Custom Item Entry
+              Custom Quick Entry
             </Text>
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
               <TextInput
@@ -318,13 +326,14 @@ export default function Log() {
       )}
 
       {/* Daily Macro Progress Status */}
-      <SectionTitle>Daily Macro Status</SectionTitle>
-      <Card>
+      <SectionTitle>Daily Nutrition Targets</SectionTitle>
+      <Card style={styles.nutritionCard}>
         <View style={styles.macroHead}>
-          <Text style={styles.kcal}>
-            {totals.kcal} <Text style={type.small}>of {data.profile.calorieGoal} kcal</Text>
-          </Text>
-          <Tag color={totals.kcal > data.profile.calorieGoal ? colors.amber : colors.green}>
+          <View>
+            <Text style={styles.kcal}>{totals.kcal} <Text style={[type.small, { color: colors.muted }]}>/ {data.profile.calorieGoal} kcal</Text></Text>
+            <Text style={[type.small, { color: colors.muted }]}>Total Calories Consumed</Text>
+          </View>
+          <Tag color={totals.kcal > data.profile.calorieGoal ? colors.amber : colors.lime}>
             {Math.max(0, data.profile.calorieGoal - totals.kcal)} KCAL LEFT
           </Tag>
         </View>
@@ -334,17 +343,20 @@ export default function Log() {
           color={totals.kcal > data.profile.calorieGoal ? colors.amber : colors.primary}
         />
 
-        {macros.map((m) => (
-          <View key={m.l} style={{ marginTop: 14 }}>
-            <View style={styles.macroHead}>
-              <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13 }}>{m.l}</Text>
-              <Text style={type.small}>
-                {m.v}g / {m.g}g ({m.g > 0 ? Math.round((m.v / m.g) * 100) : 0}%)
-              </Text>
+        <View style={styles.macroGrid}>
+          {macros.map((m) => (
+            <View key={m.l} style={styles.macroStatBox}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <Text style={{ color: colors.text, fontWeight: '700', fontSize: 13 }}>{m.l}</Text>
+                <Text style={[type.small, { color: m.c, fontWeight: '800' }]}>
+                  {m.v}g
+                </Text>
+              </View>
+              <Bar value={m.v} max={m.g} color={m.c} />
+              <Text style={[type.caption, { marginTop: 4 }]}>Target: {m.g}g</Text>
             </View>
-            <Bar value={m.v} max={m.g} color={m.c} />
-          </View>
-        ))}
+          ))}
+        </View>
       </Card>
 
       {/* Today's Logged Meals */}
@@ -364,18 +376,18 @@ export default function Log() {
                 <Image source={{ uri: m.photoUri }} style={styles.thumb} />
               ) : (
                 <View style={[styles.thumb, styles.thumbPlaceholder]}>
-                  <Ionicons name="restaurant" size={22} color={colors.muted} />
+                  <Ionicons name="restaurant" size={22} color={colors.primary} />
                 </View>
               )}
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Text style={{ fontWeight: '700', color: colors.text, fontSize: 15 }}>{m.name}</Text>
-                  <Tag color={m.source === 'scan' ? colors.primaryText : colors.muted}>
-                    {m.source === 'scan' ? 'PHOTO' : 'MANUAL'}
+                  <Tag color={m.source === 'scan' ? colors.primary : colors.muted}>
+                    {m.source === 'scan' ? 'AI SCAN' : 'MANUAL'}
                   </Tag>
                 </View>
-                <Text style={type.small}>
-                  {m.type} • {m.kcal} kcal{m.portion !== 1 ? ` (${m.portion}x portion)` : ''}
+                <Text style={[type.small, { marginTop: 2 }]}>
+                  {m.type} • <Text style={{ color: colors.primary, fontWeight: '700' }}>{m.kcal} kcal</Text>{m.portion !== 1 ? ` (${m.portion}x)` : ''}
                 </Text>
               </View>
               <Pressable
@@ -391,19 +403,19 @@ export default function Log() {
             {/* Expanded meal macro breakdown */}
             {selectedMeal?.id === m.id && (
               <View style={styles.mealDetailDrawer}>
-                <View style={styles.macroPill}>
-                  <Text style={[type.small, { color: colors.primaryText, fontWeight: '700' }]}>
-                    Protein: {m.protein}g
+                <View style={[styles.macroPill, { borderColor: colors.primary }]}>
+                  <Text style={[type.caption, { color: colors.primary }]}>
+                    PROTEIN: {m.protein}g
                   </Text>
                 </View>
-                <View style={styles.macroPill}>
-                  <Text style={[type.small, { color: colors.amber, fontWeight: '700' }]}>
-                    Carbs: {m.carbs}g
+                <View style={[styles.macroPill, { borderColor: colors.amber }]}>
+                  <Text style={[type.caption, { color: colors.amber }]}>
+                    CARBS: {m.carbs}g
                   </Text>
                 </View>
-                <View style={styles.macroPill}>
-                  <Text style={[type.small, { color: colors.rose, fontWeight: '700' }]}>
-                    Fats: {m.fat}g
+                <View style={[styles.macroPill, { borderColor: colors.rose }]}>
+                  <Text style={[type.caption, { color: colors.rose }]}>
+                    FATS: {m.fat}g
                   </Text>
                 </View>
               </View>
@@ -420,18 +432,18 @@ const styles = StyleSheet.create({
   scanContainer: { marginTop: 14 },
   scan: {
     alignItems: 'center',
-    paddingVertical: 26,
+    paddingVertical: 28,
     backgroundColor: colors.surface,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: radius.card,
+    borderWidth: 1.5,
+    borderColor: colors.borderLight,
     gap: 4,
   },
   scanRing: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    borderWidth: 2,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 2.5,
     borderStyle: 'dashed',
     borderColor: colors.primary,
     alignItems: 'center',
@@ -439,14 +451,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   scanCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(99,102,241,0.18)',
+    width: 66,
+    height: 66,
+    borderRadius: 33,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  scanText: { fontSize: 18, fontWeight: '800', color: colors.text },
+  scanText: { fontSize: 18, fontWeight: '800', color: colors.text, letterSpacing: -0.2 },
   quickOptions: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -457,18 +469,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: radius.chip,
-    backgroundColor: colors.surface2,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
   },
-  shortcutText: { color: colors.primaryText, fontWeight: '700', fontSize: 13 },
+  galleryShortcutActive: {
+    borderColor: colors.lime,
+    backgroundColor: colors.surface2,
+  },
+  shortcutText: { color: colors.text, fontWeight: '700', fontSize: 13 },
+  pendingCard: { marginTop: 14, borderColor: colors.primary },
+  pendingHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, marginBottom: 8 },
   candidateRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
     padding: 12,
     borderRadius: radius.button,
     backgroundColor: colors.surface2,
@@ -477,27 +495,42 @@ const styles = StyleSheet.create({
   },
   candidateRowOn: {
     borderColor: colors.primary,
-    backgroundColor: 'rgba(99,102,241,0.12)',
+    backgroundColor: colors.primarySoft,
   },
+  macroMiniRow: { flexDirection: 'row', gap: 6 },
+  macroMiniText: { fontSize: 11, fontWeight: '800' },
   foodRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
   customBox: {
     marginTop: 14,
-    padding: 12,
+    padding: 14,
     backgroundColor: colors.surface2,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.border,
   },
-  macroHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  kcal: { fontSize: 22, fontWeight: '800', color: colors.text },
-  photo: { width: '100%', height: 180, borderRadius: 14 },
+  nutritionCard: {
+    borderRadius: radius.card,
+    borderColor: colors.borderLight,
+  },
+  macroHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
+  macroGrid: {
+    marginTop: 16,
+    gap: 12,
+  },
+  macroStatBox: {
+    backgroundColor: colors.surface2,
+    padding: 10,
+    borderRadius: 12,
+  },
+  kcal: { fontSize: 26, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
+  photo: { width: '100%', height: 200, borderRadius: 16 },
   mealCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -505,7 +538,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     paddingVertical: 12,
   },
-  thumb: { width: 50, height: 50, borderRadius: 12 },
+  thumb: { width: 54, height: 54, borderRadius: 14 },
   thumbPlaceholder: {
     backgroundColor: colors.surface2,
     alignItems: 'center',
@@ -527,6 +560,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.border,
   },
 });

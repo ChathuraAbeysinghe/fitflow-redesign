@@ -56,16 +56,19 @@ export default function Plan() {
           return (
             <View
               key={s.id}
-              style={[styles.rest, i === t && { borderColor: colors.primary, backgroundColor: 'rgba(99,102,241,0.05)' }]}
+              style={[
+                styles.rest,
+                i === t && { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+              ]}
             >
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Tag color={colors.muted}>
                   {DAY_NAMES[i]}
                   {i === t ? ' • TODAY' : ''}
                 </Tag>
-                <Tag color={colors.border}>REST DAY</Tag>
+                <Tag color={colors.borderLight}>REST & MOBILITY</Tag>
               </View>
-              <Text style={[type.small, { marginTop: 4 }]}>Recovery & mobility day. Rest is essential for progress.</Text>
+              <Text style={[type.small, { marginTop: 6, color: colors.muted }]}>Active recovery day. Essential for muscle synthesis & joint health.</Text>
             </View>
           );
         }
@@ -79,7 +82,7 @@ export default function Plan() {
               styles.row,
               s.done && styles.rowDone,
               missed && { borderColor: colors.amber, borderWidth: 1.5 },
-              i === t && !s.done && { borderColor: colors.primaryText, borderWidth: 1.5 },
+              i === t && !s.done && { borderColor: colors.primary, borderWidth: 1.5 },
             ]}
           >
             <View style={styles.top}>
@@ -91,7 +94,7 @@ export default function Plan() {
                   onPress={() => swapDays(i, i - 1)}
                   disabled={!canMove(i, -1)}
                 >
-                  <Ionicons name="chevron-up" size={20} color={canMove(i, -1) ? colors.muted : colors.border} />
+                  <Ionicons name="chevron-up" size={20} color={canMove(i, -1) ? colors.text : colors.border} />
                 </Pressable>
                 <Pressable
                   accessibilityLabel={`Move ${s.title} later`}
@@ -99,7 +102,7 @@ export default function Plan() {
                   onPress={() => swapDays(i, i + 1)}
                   disabled={!canMove(i, 1)}
                 >
-                  <Ionicons name="chevron-down" size={20} color={canMove(i, 1) ? colors.muted : colors.border} />
+                  <Ionicons name="chevron-down" size={20} color={canMove(i, 1) ? colors.text : colors.border} />
                 </Pressable>
               </View>
 
@@ -110,15 +113,17 @@ export default function Plan() {
                 accessibilityRole="button"
                 accessibilityLabel={`${s.title}, show details`}
               >
-                <Tag color={missed ? colors.amber : s.done || i === t ? colors.primaryText : colors.muted}>
-                  {DAY_NAMES[i]}
-                  {i === t ? ' • TODAY' : ''}
-                  {missed ? ' • MISSED' : ''}
-                  {s.done ? ' • COMPLETED' : ''}
-                </Tag>
-                <Text style={[styles.title, !s.done && i !== t && { color: colors.muted }]}>{s.title}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                  <Tag color={missed ? colors.amber : s.done ? colors.lime : i === t ? colors.primary : colors.muted}>
+                    {DAY_NAMES[i]}
+                    {i === t ? ' • TODAY' : ''}
+                    {missed ? ' • MISSED' : ''}
+                    {s.done ? ' • COMPLETED' : ''}
+                  </Tag>
+                </View>
+                <Text style={[styles.title, !s.done && i !== t && { color: colors.textSecondary }]}>{s.title}</Text>
                 <Text style={type.small}>
-                  {s.minutes} min • {s.exercises.length} exercises • {s.focus.toUpperCase()}
+                  {s.minutes} min • {s.exercises.length} exercises • <Text style={{ color: colors.primary, fontWeight: '700' }}>{s.focus.toUpperCase()}</Text>
                 </Text>
               </Pressable>
 
@@ -144,7 +149,7 @@ export default function Plan() {
                   accessibilityRole="button"
                   accessibilityLabel="Reschedule session to another day"
                 >
-                  <Ionicons name="calendar-outline" size={15} color={colors.primaryText} />
+                  <Ionicons name="calendar-outline" size={15} color={colors.primary} />
                   <Text style={styles.link}>
                     {isRescheduling ? 'Cancel Reschedule' : 'Reschedule to another day'}
                   </Text>
@@ -194,8 +199,8 @@ export default function Plan() {
                         <Text
                           style={[
                             styles.dayChipText,
-                            isSelf && { color: colors.primaryText },
-                            isRest && { color: colors.green },
+                            isSelf && { color: colors.primary },
+                            isRest && { color: colors.lime },
                             isTargetDone && { color: colors.muted },
                           ]}
                         >
@@ -218,7 +223,7 @@ export default function Plan() {
                 {s.exercises.map((e, eIdx) => (
                   <View key={e.exerciseId} style={styles.exerciseItem}>
                     <View style={styles.exerciseNum}>
-                      <Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }}>{eIdx + 1}</Text>
+                      <Text style={{ color: colors.bg, fontSize: 12, fontWeight: '800' }}>{eIdx + 1}</Text>
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={{ color: colors.text, fontWeight: '700', fontSize: 14 }}>{e.name}</Text>
@@ -258,7 +263,7 @@ export default function Plan() {
 }
 
 const styles = StyleSheet.create({
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primaryText, marginTop: 7 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primary, marginTop: 7 },
   row: {
     backgroundColor: colors.surface,
     borderRadius: radius.card,
@@ -267,15 +272,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  rowDone: { borderColor: colors.primary, backgroundColor: 'rgba(99,102,241,0.08)' },
+  rowDone: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   top: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   rest: {
     borderRadius: radius.card,
-    padding: 12,
+    padding: 14,
     marginBottom: 10,
     borderWidth: 1,
     borderStyle: 'dashed',
-    borderColor: colors.border,
+    borderColor: colors.borderLight,
+    backgroundColor: colors.surface,
   },
   arrows: { alignItems: 'center', gap: 4 },
   title: { fontSize: 16, fontWeight: '700', color: colors.text, marginVertical: 2 },
@@ -289,7 +295,7 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
   },
   rescheduleBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  link: { color: colors.primaryText, fontWeight: '700', fontSize: 13 },
+  link: { color: colors.primary, fontWeight: '700', fontSize: 13 },
   dayPicker: {
     marginTop: 10,
     padding: 12,
@@ -309,8 +315,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     minWidth: 42,
   },
-  dayChipSelf: { borderColor: colors.primaryText, backgroundColor: 'rgba(99,102,241,0.15)' },
-  dayChipFree: { borderColor: colors.green, backgroundColor: 'rgba(16,185,129,0.1)' },
+  dayChipSelf: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  dayChipFree: { borderColor: colors.lime, backgroundColor: colors.limeSoft },
   dayChipDisabled: { opacity: 0.4 },
   dayChipText: { fontSize: 11, fontWeight: '700', color: colors.text },
   dayChipSub: { fontSize: 9, color: colors.muted, marginTop: 2 },

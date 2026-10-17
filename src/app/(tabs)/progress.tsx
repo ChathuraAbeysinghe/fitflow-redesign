@@ -79,12 +79,12 @@ export default function Progress() {
                 style={[
                   styles.day,
                   hasWorkout && styles.dayOn,
-                  isSelected && { borderColor: colors.amber, borderWidth: 2 },
+                  isSelected && { borderColor: colors.primary, borderWidth: 2 },
                   s.rest && !hasWorkout && { borderStyle: 'dashed' },
                 ]}
               >
-                <Text style={{ color: hasWorkout ? '#fff' : colors.muted, fontWeight: '800' }}>{d[0]}</Text>
-                <View style={[styles.dot, { backgroundColor: hasWorkout ? '#fff' : colors.border }]} />
+                <Text style={{ color: hasWorkout ? colors.bg : colors.muted, fontWeight: '800' }}>{d[0]}</Text>
+                <View style={[styles.dot, { backgroundColor: hasWorkout ? colors.bg : colors.border }]} />
               </View>
               <Text style={type.small}>{w.minutesByDay[i] ? `${w.minutesByDay[i]}m` : s.rest ? 'rest' : ' '}</Text>
             </Pressable>
@@ -99,7 +99,7 @@ export default function Progress() {
             <Text style={{ color: colors.text, fontWeight: '700', fontSize: 15 }}>
               {DAY_LONG[selectedDay]}
             </Text>
-            <Tag color={data.plan.sessions[selectedDay].done ? colors.green : colors.primaryText}>
+            <Tag color={data.plan.sessions[selectedDay].done ? colors.lime : colors.primary}>
               {data.plan.sessions[selectedDay].done ? 'COMPLETED' : data.plan.sessions[selectedDay].rest ? 'REST DAY' : 'PLANNED'}
             </Tag>
           </View>
@@ -114,7 +114,7 @@ export default function Progress() {
       <Card>
         {insights.map((t, i) => (
           <View key={i} style={{ flexDirection: 'row', gap: 8, marginTop: i ? 10 : 0 }}>
-            <Ionicons name="sparkles" size={16} color={colors.primaryText} style={{ marginTop: 2 }} />
+            <Ionicons name="sparkles" size={16} color={colors.primary} style={{ marginTop: 2 }} />
             <Text style={[type.body, { flex: 1, fontSize: 14 }]}>{t}</Text>
           </View>
         ))}
@@ -124,7 +124,7 @@ export default function Progress() {
       <SectionTitle>Streaks & Badges</SectionTitle>
       <View style={styles.badges}>
         {badges.map((b) => {
-          const tint = BADGE_TINT[b.id] ?? colors.primaryText;
+          const tint = BADGE_TINT[b.id] ?? colors.primary;
           const isSelected = pickedBadge === b.id;
 
           return (
@@ -135,8 +135,8 @@ export default function Progress() {
               accessibilityLabel={`${b.label}. ${b.earned ? 'Earned' : b.hint}`}
               style={[
                 styles.badge,
-                b.earned && { borderColor: `${tint}66` },
-                isSelected && { borderColor: colors.primaryText, borderWidth: 2 },
+                b.earned && { borderColor: `${tint}80`, backgroundColor: `${tint}10` },
+                isSelected && { borderColor: colors.primary, borderWidth: 2 },
               ]}
             >
               <View
@@ -152,7 +152,7 @@ export default function Progress() {
               </Text>
               {b.earned && (
                 <View style={styles.earnedDot}>
-                  <Ionicons name="checkmark" size={10} color="#fff" />
+                  <Ionicons name="checkmark" size={10} color={colors.bg} />
                 </View>
               )}
             </Pressable>
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: colors.green,
+    backgroundColor: colors.lime,
     alignItems: 'center',
     justifyContent: 'center',
   },
